@@ -1,7 +1,9 @@
 package io.thirdplanet.kafka_producerj;
 
-import java.util.Properties;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 
+import java.util.Properties;
 /**
  * Created by mikeyb on 7/29/17.
  * https://kafka.apache.org/0100/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html
@@ -18,5 +20,6 @@ public class Driver {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        Producer<String,String>  producer = new KafkaProducer<String, String>(props);
     }
 }
