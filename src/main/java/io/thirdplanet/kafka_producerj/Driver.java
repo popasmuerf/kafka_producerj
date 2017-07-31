@@ -4,6 +4,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
@@ -15,8 +18,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Driver {
     private static String topicName = "jproducer";
-    private static String fpath = "/home/mikeyb/data/text_files/logs/pfsense";
-    public static void main(String args[]) {
+    private static String fpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+    public static void main(String args[]) throws IOException {
         System.out.println("Runs");
         Properties props = new Properties();
         props.put("metadata.broker.list", "broker1:9092,broker2:9092");
@@ -30,20 +33,42 @@ public class Driver {
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         Producer<String,String>  producer = new KafkaProducer<String, String>(props);
         String topic = "pfsense";
+        try {
+            runSendLogsFromTextFileStatic (producer,topic);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        producer.close();
+    }
 
-       for(int i = 0; i < 100 ; i++){
-           Random rnd = new Random();
-           long runtime = new Date().getTime();
-           String ip = "192.168.1";
-           int rndInt = rnd.nextInt(255);
-           String rndIntStr = new Integer(rndInt).toString();
-           String msg = "Jul 13 17:46:51 pfSense filterlog: 5,16777216,,1000000103,xn0,match,block,in,4,0x0,,47,0,0,DF,17,udp,129,37.134.157.194,10.0.0.56,63105,25148,109";
-           //String msg = "http://www.example.com:" + ip  + rndIntStr;
-           ProducerRecord<String,String> producerRecord = new ProducerRecord<String, String>(topic,ip,msg);
-           producer.send(producerRecord);
-           try{ TimeUnit.SECONDS.sleep(1);}catch(InterruptedException e ){}
-
-       }
-       producer.close();
+    public static void runBasic (Producer<String,String> producer,String topic){
+        for(int i = 0; i < 100000 ; i++){
+            Random rnd = new Random();
+            long runtime = new Date().getTime();
+            String ip = "192.168.1";
+            int rndInt = rnd.nextInt(255);
+            String rndIntStr = new Integer(rndInt).toString();
+            String msg = "Jul 13 17:46:51 pfSense filterlog: 5,16777216,,1000000103,xn0,match,block,in,4,0x0,,47,0,0,DF,17,udp,129,37.134.157.194,10.0.0.56,63105,25148,109";
+            //String msg = "http://www.example.com:" + ip  + rndIntStr;
+            ProducerRecord<String,String> producerRecord = new ProducerRecord<String, String>(topic,ip,msg);
+            producer.send(producerRecord);
+            try{ TimeUnit.SECONDS.sleep(1);}catch(InterruptedException e ){}
+        }
+    }
+    public static void runSendLogsFromTextFileStatic (Producer<String,String> producer,String topic) throws IOException {
+        String ffpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+        BufferedReader br = new BufferedReader(new FileReader(ffpath));
+        if(br == null){System.out.println("br is null"); System.exit(-1);};
+        String record;
+        for(int i = 0; i < 100000 ; i++){
+            //----------------------
+            if((record = br.readLine()) != null) {
+                System.out.println(record);
+                ProducerRecord<String,String> producerRecord = new ProducerRecord<String, String>(topic,record);
+                producer.send(producerRecord);
+            }
+            try{ TimeUnit.SECONDS.sleep(1);}catch(InterruptedException e ){}
+        }
+        br.close();
     }
 }
