@@ -18,7 +18,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class Driver {
     private static String topicName = "jproducer";
-    private static String fpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+    //private static String fpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+    //private static String fpath = "/Users/mdb/data/logs/pfsense/pflogs.txt" ;
+    private static String fpath = "/Users/mdb/data/logs/pfsense/new.pfsense.txt" ;
     public static void main(String args[]) throws IOException {
         System.out.println("Runs");
         Properties props = new Properties();
@@ -56,16 +58,18 @@ public class Driver {
         }
     }
     public static void runSendLogsFromTextFileStatic (Producer<String,String> producer,String topic) throws IOException {
-        String ffpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+        //String ffpath = "/home/mikeyb/data/text_files/logs/pfsense/pflogs.txt";
+        //String ffpath = "/Users/mdb/data/logs/pfsense/pflogs.txt" ;
+         String ffpath = "/Users/mdb/data/logs/pfsense/new.pfsense.txt" ;
         BufferedReader br = new BufferedReader(new FileReader(ffpath));
         if(br == null){System.out.println("br is null"); System.exit(-1);};
         String record;
         for(int i = 0; i < 100000 ; i++){
             //----------------------
             if((record = br.readLine()) != null) {
-                System.out.println(record);
                 ProducerRecord<String,String> producerRecord = new ProducerRecord<String, String>(topic,record);
                 producer.send(producerRecord);
+                System.out.println(record);
             }
             try{ TimeUnit.SECONDS.sleep(1);}catch(InterruptedException e ){}
         }
